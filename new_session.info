@@ -1,0 +1,6 @@
+;$Id$
+name = "New Session"
+description = "Do the mundane stuff for creating a new session"
+core = 6.x
+php = 5.2
+version = 6.x-1

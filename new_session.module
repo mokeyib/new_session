@@ -1,0 +1,235 @@
+<?php
+// $Id$
+/**
+ * @file
+ * Module for creating a new session. Basically, this will do the mundane
+ * stuff that is annoying for a person to have to do. Entering new nodes
+ * for the session, for the Vols & Free Play courses, the Not At Co-op
+ * courses, the repeating volunteer jobs, etc. Basically a script that can
+ * be run each session to do all the basic setup.
+ * @todo Eventually this will put up a dialog to ask for the rec center's
+ * dates. It will then put up a suggestion of setup dates, with the option
+ * to change any. Once these dates are confirmed, all appropriate dates will
+ * be added to the calendar. The session node will be created. Other steps are
+ * specified in the web how-to (and should be listed as impolemented)
+ */
+
+/**
+ * implementation of hook_help()
+ */
+function new_session_help ($path, $arg) {
+  if ($path == 'admin/help#new_session') {
+    $txt = 'This module can be run at the start of a new session to get the '.
+      'website ready for the new session.';
+    return '<p>'. t($txt) .'</p>';
+  }
+}
+
+/**
+ * Implementation of hook_menu()
+ * This is where we register a menu item, attaching a callback to launch
+ * our module. We're putting our main menu item at admin/new_session.
+ * We also create a callback at admin/new_session/dates for setting the
+ * details of the session dates. We expect the admin to go to admin/new_session
+ * and a submit from there will take us to admin/new_session/dates. Though
+ * an admin could also go directly to the dates page.
+ */
+ function new_session_menu () {
+   // the page to start with, where the user names the new session
+   $items['admin/new_session'] = array(
+   	 'title' => 'New Session',
+     'page callback' => '_ns_start',
+     'access arguments' => array('administer site configuration'),
+     'type' => MENU_CALLBACK,
+   );
+   // the page where the user enters the rec center's start and end date
+   $items['admin/new_session_dates/%'] = array(
+   	 'title' => 'New Session Dates',
+   	 'page callback' => '_ns_rec_dates',
+     'page arguments' => array(2),
+   	 'access arguments' => array('administer site configuration'),
+   	 'type' => MENU_CALLBACK,
+   );
+   // the page where the user confirms all of the dates for the session
+   $items['admin/new_session_confirm_dates/%'] = array(
+   	 'title' => 'New Session Confirm Dates',
+   	 'page callback' => '_ns_confirm_dates',
+     'page arguments' => array(2),
+     'access arguments' => array('administer site configuration'),
+   	 'type' => MENU_CALLBACK,
+   );
+   return $items;
+ }
+
+/**
+ * start the actual work of setting up for a new session
+ * create a link to start the process
+ */
+function _ns_start () {
+  $start = '<p>Start a new session</p>';
+  $start .= drupal_get_form('_ns_form');
+  return $start;
+}
+
+/**
+ * create the form that will allow us to name the session
+ * this form will just show the season (Fall I, Winter, etc.)
+ * and a year entry field.
+ */
+function _ns_form () {
+  // create a section with a title
+  $form['session'] = array(
+  	'#type' => 'fieldset',
+    '#title' => t('Session Information'),
+  );
+  // add a field for the name of the session
+  $form['session']['season'] = array(
+  	'#type' => 'select',
+    '#title' => t('Season of Session'),
+    '#options' => array(
+      'Fall I' => t('Fall I'),
+      'Fall II' => t('Fall II'),
+      'Winter' => t('Winter'),
+      'Spring' => t('Spring'),
+    ),
+    '#required' => TRUE,
+  );
+  // and the year
+  $form['session']['year'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Year'),
+    '#default_value' => date('Y'),
+    '#size' => 4,
+    '#maxlength' => 4,
+    '#required' => TRUE,
+  );
+
+  // and a submit button
+  $form['submit'] = array(
+  	'#type' => 'submit',
+    '#value' => t('Create Session'),
+  );
+  return $form;
+}
+
+/**
+ * validate the form results (this is automatically called)
+ * All we need to do is make sure the year is an integer
+ * $form_state['values'] stores the data from the form
+ * form_set_error is used to report errors. If we don't call form_set_error, whoever
+ * called this knows there were no errors and goes on to call new_session_form_submit
+ */
+function _ns_form_validate ($form, &$form_state) {
+  $year = $form_state['values']['year'];
+  // error if we have non-digit input or the year is less than this year
+  // @todo make year safe, use t() elsewhere
+  if (!ctype_digit($year) || intval($year) < date('Y')) {
+    form_set_error('', t('Illegal value for year: \''. $year
+      .'\' year must be an integer greater than or equal to '.date('Y')));
+  }
+}
+
+/**
+ * form data has been submitted.
+ *   * Create Session node
+ *   * Remove Paid Role from everyone
+ *   * Update default session for new courses
+ *   * @todo Edit right side menu.
+ *   * @todo Update permissions
+ * @todo check website how-tos to see what else we need to do. Specifically, we can
+ * create the default courses and volunteer jobs, which will save a lot of time!
+ */
+function _ns_form_submit ($form, &$form_state) {
+  $nid = _ns_create_session($form_state['values']['season'],
+                            $form_state['values']['year']);
+  _ns_remove_paid_role();
+  _ns_update_default_session($nid);
+  // put this session into the session dates table
+  // we're done, so redirect to a page we've set up saying we're done.
+  $form_state['redirect'] = sprintf('admin/new_session_dates/'. $nid);
+}
+
+/**
+ * a function to create a session node
+ * in the form '$year $season', ex. '2011 Spring'
+ * @param string $season (like Winter, Fall I, etc.)
+ * @param int $year of the new session
+ * @return int nid of the new node
+ */
+function _ns_create_session ($season, $year) {
+  global $user;
+
+  $node = new stdClass();
+  $node->title = $year .' '. $season;
+  $node->type = 'session';
+  // not sure why user doesn't get set by default
+  $node->uid = $user->uid;
+  node_save($node);
+
+  // store the session in the dates table
+  module_load_include('inc', 'new_session', 'new_session_db');
+  _ns_db_insert($node->nid, $node->title);
+  // store the season too
+  _ns_db_put($node->nid, 'season', $season);
+
+  drupal_set_message("New Session node with nid ". $node->nid . " created.\n");
+  return $node->nid;
+}
+
+/**
+ * a function to remove Paid role from all users.
+ * It is important to do this as early as possible, to reduce the chance that someone has paid
+ * the treasurer directly for this coming session already). Let the treasurer know when this
+ * step is complete so s/he can make sure anyone who has paid for the upcoming session has their
+ * status corrected.
+ */
+function _ns_remove_paid_role () {
+  // Paid role has rid 8. users_roles table has an entry for each role for each user. Deleting
+  // the entry removes the role. So, deleting all entries where rid=8 removes Paid role from all
+  // users.
+  db_query('DELETE FROM {users_roles} WHERE rid=8');
+
+  drupal_set_message("Paid Role removed from all users. Be sure to notify the treasurer in case ".
+    "someone has paid for this session early.\n");
+}
+
+/**
+ * a function to change the default session for course objects
+ * @param int $nid the node id that will be the new default for courses (that is, the nid
+ *   of the new session)
+ */
+function _ns_update_default_session ($nid) {
+  // it's probably wrong to be accessing this stuff so directly, but I can't
+  // figure out the CCK API enough to do it more abstractly. Look at pg 184
+  module_load_include('inc', 'content', 'includes/content.crud');
+  $fields = content_field_instance_read(array('type_name' => 'course',
+                                              'field_name' => 'field_course_session'));
+  $fields[0]['widget']['default_value'][0]['nid'] = $nid;
+  content_field_instance_update($fields[0]);
+
+  drupal_set_message("Default session for new Courses is ". $nid);
+}
+
+/**
+ * set the rec center dates for a new session
+ * create a link to start the process
+ * @param int $nid the node id of the session
+ */
+function _ns_rec_dates ($nid) {
+  module_load_include('inc', 'new_session', 'new_session_dates');
+  $start = '<p>Set the dates for the session</p>';
+  $start .= drupal_get_form('_ns_rec_dates_form', $nid);
+  return $start;
+}
+
+/**
+ * confirm the dates for the given session
+ * @param int $nid the node id for the given session
+ * @return the text to display
+ */
+function _ns_confirm_dates ($nid) {
+  module_load_include('inc', 'new_session', 'new_session_dates');
+  $start = '<p>Confirm dates for the new session</p>';
+  $start .= drupal_get_form('_ns_confirm_dates_form', $nid);
+  return $start;
+}

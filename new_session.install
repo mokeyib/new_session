@@ -1,0 +1,29 @@
+<?php
+/**
+ * the install file defines the database schema
+ * and handles the creation and deletion of the database table
+ * We handle all of this in our database include file
+ */
+
+
+/**
+ * Implementation of hook_install
+ */
+function new_session_install () {
+  module_load_include('inc', 'new_session', 'new_session_db');
+  _ns_db_install();
+}
+/**
+ * Implementation of hook_schema()
+ */
+function new_session_schema () {
+  module_load_include('inc', 'new_session', 'new_session_db');
+  return _ns_db_schema();
+}
+/**
+ * Implementation of hook_uninstall()
+ */
+function new_session_uninstall () {
+  module_load_include('inc', 'new_session', 'new_session_db');
+  _ns_db_uninstall();
+}
