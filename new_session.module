@@ -28,6 +28,8 @@ define(CLEAN_UP, 251);
 define(FLOATER, 247);
 define(SET_UP, 242);
 define(VOLUNTEER, 241);
+define(TEACHER, 146);
+define(TEACHING_ASSISTANT, 147);
 
 /**
  * implementation of hook_help()
@@ -268,32 +270,41 @@ function _ns_initialize () {
   $msg .= _ns_initialize_away(3);
   $msg .= _ns_initialize_away(4);
 
-  $course_nid = _ns_create_course('Volunteers and Free Play (0)', 'Vols & Free',
-    'Before',
-    'If you do not want a class assignment this period (either as a student or a '.
-    'volunteer), sign up as a student of this class. You can move freely among any '.
-    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
-    'Note that not each area is open each period.'.
-    'This is also a placeholder for certain volunteer jobs.');
+  $msg .= _ns_initialize_vols_free_before();
   $msg .= _ns_initialize_vols_free_period(1);
   $msg .= _ns_initialize_vols_free_period(2);
-  $course_nid = _ns_create_course('Volunteers and Free Play (2.5)', 'Vols & Free',
-    'Lunch',
-    'If you do not want a class assignment this period (either as a student or a '.
-    'volunteer), sign up as a student of this class. You can move freely among any '.
-    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
-    'Note that not each area is open each period.'.
-    'This is also a placeholder for certain volunteer jobs.');
+  $msg .= _ns_initialize_vols_free_lunch();
   $msg .= _ns_initialize_vols_free_period(3);
   $msg .= _ns_initialize_vols_free_period(4);
-  $course_nid = _ns_create_course('Volunteers and Free Play (5)', 'Vols & Free',
-    'After',
-    'If you don\'t want a class assignment this period (either as a student or a '.
-    'volunteer), sign up as a student of this class. You can move freely among any '.
-    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
-    'Note that not each area is open each period.'.
-    'This is also a placeholder for certain volunteer jobs.');
+  $msg .= _ns_initialize_vols_free_after();
+
+  $msg .= _ns_initialize_party();
+
   $msg .= "</ul>\n";
+
+  return $msg;
+}
+
+/**
+ * initialize a party planning course
+ * @return string the <li> enclosed text to print for a status message
+ */
+function _ns_initialize_party () {
+  $course_nid = _ns_create_course('Party Planning', 'Party', 'Lunch',
+    'Planning for a end of session party. Add as many teachers and '.
+    'assistants as desired. Use teacher if you plan to take more '.
+    'responsibility, and teaching assistant if you just want to help.');
+  $msg = "<li>New party planning node with nid <a href=\"../node/".
+      $course_nid ."\">". $course_nid ."</a> created.\n";
+
+  $msg .= "<ul>\n";
+  $nid = _ns_create_job($course_nid, TEACHER);
+  $msg .= "<li>Teacher, nid <a href=\"../node/". $nid ."\">". $nid .
+    "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, TEACHING_ASSISTANT);
+  $msg .= "<li>Teaching assistant, nid <a href=\"../node/". $nid ."\">". $nid .
+    "</a> created.</li>\n";
+  $msg .= "</ul></li>";
 
   return $msg;
 }
@@ -312,43 +323,139 @@ function _ns_initialize_away($period) {
 }
 
 /**
+ * initialize Volunteers and Free Play Before
+ * @return string the <li> enclosed text to print for a status message
+ */
+function _ns_initialize_vols_free_before () {
+  $course_nid = _ns_create_vols_free_course('Volunteers and Free Play (0)',
+    'Vols & Free', 'Before');
+  $msg = "<li>New node Vols & Free Before with nid <a href=\"../node/".
+    $course_nid ."\">". $course_nid ."</a> created.\n";
+
+  $msg .= "<ul>\n";
+  $nid = _ns_create_job($course_nid, AUDITORIUM);
+  $msg .= "<li>Auditorium monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, SETUP);
+  $msg .= "<li>Setup manager, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, VOLUNTEER);
+  $msg .= "<li>Volunteer manager, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $msg .= "</ul></li>";
+
+  return $msg;
+}
+
+/**
+ * initialize Volunteers and Free Play Lunch
+ * @return string the <li> enclosed text to print for a status message
+ */
+function _ns_initialize_vols_free_lunch () {
+  $course_nid = _ns_create_vols_free_course('Volunteers and Free Play (2.5)',
+    'Vols & Free', 'Lunch');
+  $msg = "<li>New node Vols & Free Lunch with nid <a href=\"../node/".
+    $course_nid ."\">". $course_nid ."</a> created.\n";
+
+  $msg .= "<ul>\n";
+  $nid = _ns_create_job($course_nid, LUNCH_CLEAN);
+  $msg .= "<li>Lunch cleanup manager, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, LUNCH_TIME);
+  $msg .= "<li>Lunch time keeper, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, GYM);
+  $msg .= "<li>Gym monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, GYM);
+  $msg .= "<li>Gym monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $msg .= "</ul></li>";
+
+  return $msg;
+}
+
+/**
+ * initialize Volunteers and Free Play After
+ * @return string the <li> enclosed text to print for a status message
+ */
+function _ns_initialize_vols_free_after () {
+  $course_nid = _ns_create_vols_free_course('Volunteers and Free Play (5)',
+      'Vols & Free', 'After');
+  $msg = "<li>New node Vols & Free After with nid <a href=\"../node/".
+      $course_nid ."\">". $course_nid ."</a> created.\n";
+
+  $msg .= "<ul>\n";
+  $nid = _ns_create_job($course_nid, CLEAN_UP);
+  $msg .= "<li>Cleanup manager, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, AUDITORIUM);
+  $msg .= "<li>Auditorium monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  for ($i = 0; $i < 5; $i++) {
+    $nid = _ns_create_job($course_nid, COMMITTEE);
+    $msg .= "<li>Committee member, nid <a href=\"../node/". $nid ."\">". $nid .
+            "</a> created.</li>\n";
+  }
+  $msg .= "</ul></li>";
+
+  return $msg;
+}
+
+/**
  * initialize one period of Volunteers and Free Play
  * @param int $period the number of the period
  * @return string the <li> enclosed text to print for a status message
  */
 function _ns_initialize_vols_free_period ($period) {
-  $course_nid = _ns_create_course('Volunteers and Free Play '.$period, 'Vols & Free',
-    'Period '.$period,
-    'If you do not want a class assignment this period (either as a student or a '.
-    'volunteer), sign up as a student of this class. You can move freely among any '.
-    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
-    'Note that not each area is open each period.'.
-    'This is also a placeholder for certain volunteer jobs.');
+  $course_nid = _ns_create_vols_free_course('Volunteers and Free Play ('.$period.')',
+    'Vols & Free', 'Period '.$period);
   $msg = "<li>New node Vols & Free ".$period." with nid <a href=\"../node/".
     $course_nid ."\">". $course_nid ."</a> created.\n";
 
   $msg .= "<ul>\n";
   $nid = _ns_create_job($course_nid, AUDITORIUM);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Auditorium monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, AUDITORIUM);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Auditorium monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, GAME);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Game room monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, GAME);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Game room monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, GYM);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Gym monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, GYM);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Gym monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, PLAYGROUND);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Playground monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, PLAYGROUND);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Playground monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, FLOATER);
-  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "<li>Floater, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, UNASSIGNED);
+  $msg .= "<li>Unassigned Volunteer, nid <a href=\"../node/". $nid ."\">". $nid .
+          "</a> created.</li>\n";
   $msg .= "</ul></li>\n";
 
   return $msg;
+}
+
+function _ns_create_vols_free_course ($title, $short_title, $period) {
+  return _ns_create_course($title, $short_title, $period,
+    'If you do not want a class assignment this period (either as a student or a '.
+    'volunteer), sign up as a student of this class. You can move freely among any '.
+    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
+    'Note that not each area is open each period.'.
+    'This is also a placeholder for certain volunteer jobs.');
 }
 
 /**
