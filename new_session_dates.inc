@@ -2,6 +2,7 @@
 
 /**
  * a form to collect the rec center dates
+ * testing git
  */
 function _ns_rec_dates_form (&$form_state, $nid) {
   // store the nid for the validation step

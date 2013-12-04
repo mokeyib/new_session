@@ -14,6 +14,21 @@
  * specified in the web how-to (and should be listed as impolemented)
  */
 
+// job types
+define(COMMITTEE, 145);
+define(AUDITORIUM, 246);
+define(GYM, 244);
+define(GAME, 245);
+define(PLAYGROUND, 1236);
+define(COMPUTER, 5795);
+define(UNASSIGNED, 6128);
+define(LUNCH_TIME, 3866);
+define(LUNCH_CLEAN, 2047);
+define(CLEAN_UP, 251);
+define(FLOATER, 247);
+define(SET_UP, 242);
+define(VOLUNTEER, 241);
+
 /**
  * implementation of hook_help()
  */
@@ -55,6 +70,12 @@ function new_session_help ($path, $arg) {
    	 'title' => 'New Session Confirm Dates',
    	 'page callback' => '_ns_confirm_dates',
      'page arguments' => array(2),
+     'access arguments' => array('administer site configuration'),
+   	 'type' => MENU_CALLBACK,
+   );
+   $items['admin/new_session_initialize'] = array(
+   	 'title' => 'New Session Initialize',
+   	 'page callback' => '_ns_initialize',
      'access arguments' => array('administer site configuration'),
    	 'type' => MENU_CALLBACK,
    );
@@ -232,4 +253,167 @@ function _ns_confirm_dates ($nid) {
   $start = '<p>Confirm dates for the new session</p>';
   $start .= drupal_get_form('_ns_confirm_dates_form', $nid);
   return $start;
+}
+
+/**
+ * create the courses that we use for all sessions
+ */
+function _ns_initialize () {
+  global $user;
+
+  $msg = "<h1>Initializing new session</h1>\n";
+  $msg .= "<ul>\n";
+  $msg .= _ns_initialize_away(1);
+  $msg .= _ns_initialize_away(2);
+  $msg .= _ns_initialize_away(3);
+  $msg .= _ns_initialize_away(4);
+
+  $course_nid = _ns_create_course('Volunteers and Free Play (0)', 'Vols & Free',
+    'Before',
+    'If you do not want a class assignment this period (either as a student or a '.
+    'volunteer), sign up as a student of this class. You can move freely among any '.
+    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
+    'Note that not each area is open each period.'.
+    'This is also a placeholder for certain volunteer jobs.');
+  $msg .= _ns_initialize_vols_free_period(1);
+  $msg .= _ns_initialize_vols_free_period(2);
+  $course_nid = _ns_create_course('Volunteers and Free Play (2.5)', 'Vols & Free',
+    'Lunch',
+    'If you do not want a class assignment this period (either as a student or a '.
+    'volunteer), sign up as a student of this class. You can move freely among any '.
+    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
+    'Note that not each area is open each period.'.
+    'This is also a placeholder for certain volunteer jobs.');
+  $msg .= _ns_initialize_vols_free_period(3);
+  $msg .= _ns_initialize_vols_free_period(4);
+  $course_nid = _ns_create_course('Volunteers and Free Play (5)', 'Vols & Free',
+    'After',
+    'If you don\'t want a class assignment this period (either as a student or a '.
+    'volunteer), sign up as a student of this class. You can move freely among any '.
+    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
+    'Note that not each area is open each period.'.
+    'This is also a placeholder for certain volunteer jobs.');
+  $msg .= "</ul>\n";
+
+  return $msg;
+}
+
+/**
+ * initialize one period of Not at Co-op
+ * @param int $period the number of the period
+ * @return string the <li> enclosed text to print for a status message
+ */
+function _ns_initialize_away($period) {
+  $course_nid = _ns_create_course('Not at Co-op ('.$period.')', 'Away',
+    'Period '.$period,
+    'Please sign up for this if you are not going to be at co-op this period.');
+  return "<li>New node Away ".$period." with nid <a href=\"../node/".
+    $course_nid ."\">". $course_nid ."</a> created.</li>\n";
+}
+
+/**
+ * initialize one period of Volunteers and Free Play
+ * @param int $period the number of the period
+ * @return string the <li> enclosed text to print for a status message
+ */
+function _ns_initialize_vols_free_period ($period) {
+  $course_nid = _ns_create_course('Volunteers and Free Play '.$period, 'Vols & Free',
+    'Period '.$period,
+    'If you do not want a class assignment this period (either as a student or a '.
+    'volunteer), sign up as a student of this class. You can move freely among any '.
+    'of the open free play areas (auditorium, computer lab, game room, gym, playground).'.
+    'Note that not each area is open each period.'.
+    'This is also a placeholder for certain volunteer jobs.');
+  $msg = "<li>New node Vols & Free ".$period." with nid <a href=\"../node/".
+    $course_nid ."\">". $course_nid ."</a> created.\n";
+
+  $msg .= "<ul>\n";
+  $nid = _ns_create_job($course_nid, AUDITORIUM);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, AUDITORIUM);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, GAME);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, GAME);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, GYM);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, GYM);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, PLAYGROUND);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, PLAYGROUND);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $nid = _ns_create_job($course_nid, FLOATER);
+  $msg .= "<li>New job with nid <a href=\"../node/". $nid ."\">". $nid ."</a> created.</li>\n";
+  $msg .= "</ul></li>\n";
+
+  return $msg;
+}
+
+/**
+ * create a single course
+ * @param string $title the title of the course
+ * @param string $short_title the short title of the course
+ * @param string $period the period for the course
+ * @param string $description a description of the course
+ * @return int the nid
+ */
+function _ns_create_course ($title, $short_title, $period, $description) {
+  global $user;
+
+  $node = (object) NULL;
+  $node->type = 'course';
+  $node->title = $title;
+  $node->uid = $user->uid;
+  $node->created = strtotime("now");
+  $node->changed = strtotime("now");
+  $node->status = 1;
+  $node->comment = 0;
+  $node->promote = 0;
+  $node->moderate = 0;
+  $node->sticky = 0;
+  // add CCK field data
+  $node->field_course_short_name[0]['value'] = $short_title;
+  $node->field_course_description[0]['value'] = $description;
+  $node->field_course_age_firm[0]['value'] = 'Suggestion';
+  $node->field_course_min_students[0]['value'] = 1;
+  $node->field_course_max_students[0]['value'] = 100;
+  $node->field_course_room_reqs[0]['value'] = 'Outside';
+  $node->field_course_time_reqs[0]['value'] = $period;
+  $node->field_course_dropins[0]['value'] = 'No drop-ins';
+
+  // save node
+  node_save($node);
+
+  return $node->nid;
+}
+
+/**
+ * create a new job
+ * @param int $nid the node id of the course
+ * @param int $job the job id of the job
+ * @return int the nid
+ */
+function _ns_create_job ($nid, $job) {
+  global $user;
+
+  $node = (object) NULL;
+  $node->type = 'volunteer_signup';
+  $node->uid = $user->uid;
+  $node->created = strtotime("now");
+  $node->changed = strtotime("now");
+  $node->status = 1;
+  $node->comment = 0;
+  $node->promote = 0;
+  $node->moderate = 0;
+  $node->sticky = 0;
+  // add CCK field data
+  $node->field_vol_signup_course[0]['nid'] = $nid;
+  $node->field_vol_job[0]['nid'] = $job;
+
+  // save node
+  node_save($node);
+
+  return $node->nid;
 }
