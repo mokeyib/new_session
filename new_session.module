@@ -432,12 +432,12 @@ function _ns_initialize_vols_free_period ($period) {
   $nid = _ns_create_job($course_nid, GYM);
   $msg .= "<li>Gym monitor, nid <a href=\"../node/". $nid ."\">". $nid .
           "</a> created.</li>\n";
-  $nid = _ns_create_job($course_nid, PLAYGROUND);
-  $msg .= "<li>Playground monitor, nid <a href=\"../node/". $nid ."\">". $nid .
-          "</a> created.</li>\n";
-  $nid = _ns_create_job($course_nid, PLAYGROUND);
-  $msg .= "<li>Playground monitor, nid <a href=\"../node/". $nid ."\">". $nid .
-          "</a> created.</li>\n";
+//  $nid = _ns_create_job($course_nid, PLAYGROUND);
+//  $msg .= "<li>Playground monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+//          "</a> created.</li>\n";
+//  $nid = _ns_create_job($course_nid, PLAYGROUND);
+//  $msg .= "<li>Playground monitor, nid <a href=\"../node/". $nid ."\">". $nid .
+//          "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, FLOATER);
   $msg .= "<li>Floater, nid <a href=\"../node/". $nid ."\">". $nid .
           "</a> created.</li>\n";
