@@ -336,7 +336,7 @@ function _ns_initialize_vols_free_before () {
   $nid = _ns_create_job($course_nid, AUDITORIUM);
   $msg .= "<li>Auditorium monitor, nid <a href=\"../node/". $nid ."\">". $nid .
           "</a> created.</li>\n";
-  $nid = _ns_create_job($course_nid, SETUP);
+  $nid = _ns_create_job($course_nid, SET_UP);
   $msg .= "<li>Setup manager, nid <a href=\"../node/". $nid ."\">". $nid .
           "</a> created.</li>\n";
   $nid = _ns_create_job($course_nid, VOLUNTEER);
