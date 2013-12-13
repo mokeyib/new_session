@@ -239,5 +239,6 @@ function _ns_db_put ($nid, $column, $value) {
  * @return the entry
  */
 function _ns_db_get ($nid, $column) {
-  return db_result(db_query('SELECT '. $column .' FROM {session_dates} WHERE nid = '. $nid));
+  return db_result(db_query("SELECT %s FROM {session_dates} ".
+      "WHERE nid = %d", $column, $nid));
 }
