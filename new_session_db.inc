@@ -215,7 +215,7 @@ function _ns_db_schema () {
  * create a new entry in the session dates table
  */
 function _ns_db_insert ($nid) {
-  db_query('INSERT INTO {session_dates} (nid) VALUES ('. $nid .')');
+  db_query("INSERT INTO {session_dates} (nid) VALUES (%d)", $nid);
 }
 
 /**
@@ -223,13 +223,11 @@ function _ns_db_insert ($nid) {
  */
 function _ns_db_put ($nid, $column, $value) {
   if (is_string($value)) {
-    $str = 'UPDATE {session_dates} SET '. $column .'=\''. $value .
-           '\' WHERE nid='. $nid;
+    $str = "UPDATE {session_dates} SET %s = '%s' WHERE nid = %d";
   } else {
-    $str = 'UPDATE {session_dates} SET '. $column .'='. $value .
-           ' WHERE nid='. $nid;
+    $str = "UPDATE {session_dates} SET %s = %d WHERE nid = %d";
   }
-  db_query($str);
+  db_query($str, $column, $value, $nid);
 }
 
 /**
