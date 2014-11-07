@@ -26,6 +26,26 @@ function new_session_help ($path, $arg) {
 }
 
 /**
+ * implementation of hook_admin
+ * This is where the settings form is created
+ */
+/*function new_session_admin () {
+  $settings_form = array();
+  $settings_form['new_session_fees_due'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Fees Due'),
+      '#default_value' => variable_get('new_session_fees_due', 14),
+      '#size' => 2,
+      '#maxlength' => 2,
+      '#element_validate' => array('element_validate_integer_positive'),
+      '#description' => t("The number of days before the first class that ".
+                          "fees are due."),
+      '#required' => TRUE,
+  );
+  return system_settings_form($form);
+}*/
+
+/**
  * Implementation of hook_menu()
  * This is where we register a menu item, attaching a callback to launch
  * our module. We're putting our main menu item at admin/new_session.

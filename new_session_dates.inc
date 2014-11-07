@@ -358,11 +358,11 @@ function _ns_prep_dates ($nid) {
 
   // fees due two weeks before classes start (usually the last day of the
   // previous session
-  $fees_due = $first_class - 14*$SECONDS_PER_DAY;
+  $fees_due = $first_class - 7*$SECONDS_PER_DAY;
   _ns_db_put($nid, 'fees_due', $fees_due);
 
   // fees posted 4 days before that
-  $fees_posted = $fees_due - 4*$SECONDS_PER_DAY;
+  $fees_posted = $fees_due - 7*$SECONDS_PER_DAY;
   _ns_db_put($nid, 'fees_posted', $fees_posted);
 
   // registration closes 3 days before that
@@ -370,7 +370,7 @@ function _ns_prep_dates ($nid) {
   _ns_db_put($nid, 'reg_end', $reg_end);
 
   // registration for new members opens 2 days before that
-  $new_member_reg_start = $reg_end - 2*$SECONDS_PER_DAY;
+  $new_member_reg_start = $reg_end - 10*$SECONDS_PER_DAY;
   _ns_db_put($nid, 'new_member_reg_start', $new_member_reg_start);
 
   // registration for former members the day before that
